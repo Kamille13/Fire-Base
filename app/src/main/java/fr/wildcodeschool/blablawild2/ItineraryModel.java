@@ -14,6 +14,10 @@ public class ItineraryModel {
     private Date date;
     private int price;
 
+    public ItineraryModel(){
+
+    }
+
     public ItineraryModel(String departure, String destination, String driver, Date date, int price) {
         this.departure = departure;
         this.destination = destination;

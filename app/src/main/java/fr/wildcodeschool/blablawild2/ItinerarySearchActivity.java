@@ -8,6 +8,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 public class ItinerarySearchActivity extends AppCompatActivity {
 
     public static final String EXTRA_TRIP = "EXTRA_TRIP";
@@ -36,6 +42,23 @@ public class ItinerarySearchActivity extends AppCompatActivity {
                 } else {
                     Intent intent = new Intent(ItinerarySearchActivity.this, ItineraryListActivity.class);
                     TripModel tripModel = new TripModel(departure, destination, date);
+                    FirebaseDatabase database = FirebaseDatabase.getInstance();
+                    DatabaseReference tripsRef = database.getReference("trips");
+                    String keys = tripsRef.push().getKey();
+                    tripsRef.child(keys).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            Intent intent = new Intent(ItinerarySearchActivity.this, MainActivity.class);
+                            startActivity(intent);
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError error) {
+                            // en cas d'erreur de récupération de la donnée
+                            Toast.makeText(ItinerarySearchActivity.this, "Failed to read value.", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    tripsRef.child(keys).setValue(tripModel);
 
                     intent.putExtra(EXTRA_TRIP, tripModel);
                     startActivity(intent);

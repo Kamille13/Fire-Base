@@ -1,6 +1,7 @@
 package fr.wildcodeschool.blablawild2;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -8,6 +9,12 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -43,6 +50,24 @@ public class ItineraryCreateActivity extends AppCompatActivity {
                     Toast.makeText(ItineraryCreateActivity.this, R.string.fill_all_fields, Toast.LENGTH_SHORT).show();
                 } else {
                     ItineraryModel itineraryModel = new ItineraryModel(departure, destination, driver, mDate, Integer.parseInt(price));
+                    FirebaseDatabase database = FirebaseDatabase.getInstance();
+                    DatabaseReference itineraryRef = database.getReference("itineraries");
+                    String key = itineraryRef.push().getKey();
+                    itineraryRef.child(key).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            Intent intent = new Intent(ItineraryCreateActivity.this, MainActivity.class);
+                            startActivity(intent);
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError error) {
+                            // en cas d'erreur de récupération de la donnée
+                            Toast.makeText(ItineraryCreateActivity.this, "Failed to read value.", Toast.LENGTH_LONG).show();
+                        }
+                    });
+// sauvegarde la valeur
+                    itineraryRef.child(key).setValue(itineraryModel);
                     // TODO : save itineraryModel into Firebase
 
                 }
